@@ -1,0 +1,364 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>minikube安装 | Crayonの博客</title><meta name="author" content="魚禾"><meta name="copyright" content="魚禾"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta property="og:type" content="article">
+<meta property="og:title" content="minikube安装">
+<meta property="og:url" content="http://sucrayon.top/posts/f7b5b7db/index.html">
+<meta property="og:site_name" content="Crayonの博客">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://sucrayon.top/images/cover/default-cover/8.jpg">
+<meta property="article:published_time" content="2022-08-12T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-08-12T16:00:00.000Z">
+<meta property="article:author" content="魚禾">
+<meta property="article:tag" content="Kubernetes">
+<meta property="article:tag" content="minikube">
+<meta property="article:tag" content="Ubuntu">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://sucrayon.top/images/cover/default-cover/8.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "minikube安装",
+  "url": "http://sucrayon.top/posts/f7b5b7db/",
+  "image": "http://sucrayon.top/images/cover/default-cover/8.jpg",
+  "datePublished": "2022-08-12T16:00:00.000Z",
+  "dateModified": "2022-08-12T16:00:00.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "魚禾",
+      "url": "http://sucrayon.top/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/avatar.jpg"><link rel="canonical" href="http://sucrayon.top/posts/f7b5b7db/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script async="async" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><script>(adsbygoogle = window.adsbygoogle || []).push({
+  google_ad_client: 'ca-pub-8421850827711566',
+  enable_page_level_ads: 'true'
+});</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":150,"languages":{"author":"作者: 魚禾","link":"链接: ","source":"来源: Crayonの博客","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'medium_zoom',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: true,
+  isAnchor: false,
+  percent: {
+    toc: false,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'minikube安装',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/static/css/common.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+  window.addEventListener('load', preloader.endLoading)
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src= "/images/loading.gif" data-lazy-src="/images/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/projects/"><i class="fa-fw fas fa-code"></i><span> 项目</span></a></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-heartbeat"></i><span> 娱乐</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/novel/"><i class="fa-fw fas fa-book-open"></i><span> 小说</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 外链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/cover/default-cover/8.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Crayonの博客</span></a><a class="nav-page-title" href="/"><span class="site-name">minikube安装</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/projects/"><i class="fa-fw fas fa-code"></i><span> 项目</span></a></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-heartbeat"></i><span> 娱乐</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/novel/"><i class="fa-fw fas fa-book-open"></i><span> 小说</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 外链</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">minikube安装</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-08-12T16:00:00.000Z" title="发表于 2022-08-13 00:00:00">2022-08-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-08-12T16:00:00.000Z" title="更新于 2022-08-13 00:00:00">2022-08-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%BE%85%E5%BD%92%E6%A1%A3/">待归档</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">782</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>3分钟</span></span><span class="post-meta-separator">|</span><span class="leancloud_visitors" id="/posts/f7b5b7db/" data-flag-title="minikube安装"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span class="leancloud-visitors-count"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/f7b5b7db/#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/posts/f7b5b7db/" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><html><head></head><body><h2 id="minikube安装"><a href="#minikube安装" class="headerlink" title="minikube安装"></a>minikube安装</h2><p>minikube官网地址：<a target="_blank" rel="noopener" href="https://minikube.sigs.k8s.io/docs/start/">https://minikube.sigs.k8s.io/docs/start/</a></p>
+<h3 id="填坑指引"><a href="#填坑指引" class="headerlink" title="填坑指引"></a>填坑指引</h3><ol>
+<li><a href="#DRV_AS_ROOT">启动报错：DRV_AS_ROOT</a></li>
+<li><a href="#HOST_HOME_PERMISSION">启动报错：HOST_HOME_PERMISSION</a></li>
+<li><a href="#image_pull_slow">启动拉取镜像慢</a></li>
+</ol>
+<h3 id="安装过程"><a href="#安装过程" class="headerlink" title="安装过程"></a>安装过程</h3><ol>
+<li><p>确认系统以及对应架构</p>
+ <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">uname</span> -a <span class="comment"># 查看系统信息</span></span><br><span class="line">Linux crayon 5.4.0-65-generic <span class="comment">#73~18.04.1-Ubuntu SMP Tue Jan 19 09:02:24 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux</span></span><br><span class="line"></span><br><span class="line">$ <span class="built_in">arch</span> <span class="comment"># 查看架构</span></span><br><span class="line">x86_64</span><br></pre></td></tr></tbody></table></figure>
+
+<p> 选择对应的配置复制下载命令下载<code>minikube</code>安装包并安装</p>
+<p> <img src= "/images/loading.gif" data-lazy-src="/images/posts-assets/minikube%E5%AE%89%E8%A3%85.assets/1660403658866.jpg" alt="1660403658866"></p>
+ <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb</span><br><span class="line"><span class="built_in">sudo</span> dpkg -i minikube_latest_amd64.deb</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p><span id="DRV_AS_ROOT">启动minikube</span></p>
+<p> 官方注明了不要使用<code>root</code>权限启动，使用<code>sudo</code>或以<code>root</code>用户执行命令会报错</p>
+ <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">sudo</span> minikube start</span><br><span class="line">😄  Ubuntu 18.04 (vbox/amd64) 上的 minikube v1.26.0</span><br><span class="line">✨  自动选择 docker 驱动。其他选项：none, ssh</span><br><span class="line">🛑  The <span class="string">"docker"</span> driver should not be used with root privileges. If you wish to <span class="built_in">continue</span> as root, use --force.</span><br><span class="line">💡  If you are running minikube within a VM, consider using --driver=none:</span><br><span class="line">📘    https://minikube.sigs.k8s.io/docs/reference/drivers/none/</span><br><span class="line"></span><br><span class="line">❌  Exiting due to DRV_AS_ROOT: The <span class="string">"docker"</span> driver should not be used with root privileges.</span><br></pre></td></tr></tbody></table></figure>
+
+<p> <span id="HOST_HOME_PERMISSION"></span>此时直接使用<code>minikube start</code>命令，但是可能出现以下问题</p>
+ <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ minikube start</span><br><span class="line">E0731 22:35:25.835507    4817 root.go:88] failed to <span class="built_in">log</span> <span class="built_in">command</span> start to audit: failed to open the audit <span class="built_in">log</span>: open /home/crayon/.minikube/logs/audit.json: permission denied</span><br><span class="line">E0731 22:35:25.835958    4817 cloud_events.go:60] unable to write to /home/crayon/.minikube/profiles/minikube/events.json: open /home/crayon/.minikube/profiles/minikube/events.json: permission denied</span><br><span class="line">😄  Ubuntu 18.04 (vbox/amd64) 上的 minikube v1.26.0</span><br><span class="line">✨  自动选择 docker 驱动。其他选项：none, ssh</span><br><span class="line"></span><br><span class="line">🧯  The requested memory allocation of 1987MiB does not leave room <span class="keyword">for</span> system overhead (total system memory: 1987MiB). You may face stability issues.</span><br><span class="line">💡  建议：Start minikube with less memory allocated: <span class="string">'minikube start --memory=1987mb'</span></span><br><span class="line"></span><br><span class="line">📌  Using Docker driver with root privileges</span><br><span class="line">👍  Starting control plane node minikube <span class="keyword">in</span> cluster minikube</span><br><span class="line">🚜  Pulling base image ...</span><br><span class="line">💾  Downloading Kubernetes v1.24.1 preload ...</span><br><span class="line"></span><br><span class="line">❌  Exiting due to HOST_HOME_PERMISSION: Failed to save config: open /home/crayon/.minikube/profiles/minikube/config.json: permission denied</span><br><span class="line">💡  建议：Your user lacks permissions to the minikube profile directory. Run: <span class="string">'sudo chown -R $USER $HOME/.minikube; chmod -R u+wrx $HOME/.minikube'</span> to fix</span><br><span class="line">🍿  Related issue: https://github.com/kubernetes/minikube/issues/9165</span><br></pre></td></tr></tbody></table></figure>
+
+<p> 问题在于当前用户的权限不足导致的，原因可能是因为一开始使用了<code>root</code>用户执行了命令而以<code>root</code>用户创建了相关配置文件导致的，按照命令的提示信息修改文件的权限即可解决</p>
+ <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 这里的文件路径默认是在当前用户的home目录下，需要将home目录路径改为你自己的home目录路径</span></span><br><span class="line">$ <span class="built_in">sudo</span> <span class="built_in">chown</span> -R crayon /home/crayon/.minikube; <span class="built_in">chmod</span> -R u+wrx /home/crayon/.minikube</span><br></pre></td></tr></tbody></table></figure>
+
+<p> 改完权限再次执行启动命令</p>
+ <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ minikube start</span><br><span class="line">😄  Ubuntu 18.04 (vbox/amd64) 上的 minikube v1.26.0</span><br><span class="line">✨  根据现有的配置文件使用 docker 驱动程序</span><br><span class="line"></span><br><span class="line">🧯  The requested memory allocation of 1987MiB does not leave room <span class="keyword">for</span> system overhead (total system memory: 1987MiB). You may face stability issues.</span><br><span class="line">💡  建议：Start minikube with less memory allocated: <span class="string">'minikube start --memory=1987mb'</span></span><br><span class="line"></span><br><span class="line">👍  Starting control plane node minikube <span class="keyword">in</span> cluster minikube</span><br></pre></td></tr></tbody></table></figure>
+
+<p> <span id="image_pull_slow"></span>启动之后会去拉去镜像，这个时候会发现镜像拉取的速度极慢</p>
+<p> 建议使用中国区镜像拉取地址</p>
+ <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 先执行删除</span></span><br><span class="line">$ minikube delete</span><br><span class="line">🔥  正在删除 docker 中的“minikube”…</span><br><span class="line">🔥  正在删除容器 <span class="string">"minikube"</span> ...</span><br><span class="line">🔥  正在移除 /home/crayon/.minikube/machines/minikube…</span><br><span class="line">💀  Removed all traces of the <span class="string">"minikube"</span> cluster.</span><br><span class="line"><span class="comment"># 再执行start命令</span></span><br><span class="line">$ minikube start --image-mirror-country=<span class="string">'cn'</span> <span class="comment"># 官方专门为中国用户准备的</span></span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+</li>
+<li><p>minikube start –image-mirror-country=’cn’ –extra-config=kubelet.cgroup-driver=systemd –driver=’docker’</p>
+</li>
+</ol>
+</body></html></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://sucrayon.top">魚禾</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://sucrayon.top/posts/f7b5b7db/">http://sucrayon.top/posts/f7b5b7db/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://sucrayon.top" target="_blank">Crayonの博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Kubernetes/">Kubernetes</a><a class="post-meta__tags" href="/tags/minikube/">minikube</a><a class="post-meta__tags" href="/tags/Ubuntu/">Ubuntu</a></div><div class="post-share"><div class="social-share" data-image="/images/cover/default-cover/8.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/images/wxpay.png" target="_blank"><img class="post-qr-code-img" src= "/images/loading.gif" data-lazy-src="/images/wxpay.png" alt="wxpay"/></a><div class="post-qr-code-desc">wxpay</div></li><li class="reward-item"><a href="/images/alipay.jpg" target="_blank"><img class="post-qr-code-img" src= "/images/loading.gif" data-lazy-src="/images/alipay.jpg" alt="alipay"/></a><div class="post-qr-code-desc">alipay</div></li></ul></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/5b29ce89/" title="Hexo-Butterfly添加友链"><img class="cover" src= "/images/loading.gif" data-lazy-src="/images/cover/default-cover/10.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Hexo-Butterfly添加友链</div></div><div class="info-2"><div class="info-item-1">Hexo-Butterfly添加友链思路 友链通过Github仓库的方式对外开放，其他人可通过Fork仓库提交PR的方式添加友链信息 友链信息仓库集成流水线，实现自动推包到NPM仓库 博客站点通过CDN方式引用script，解析后渲染至页面上  实现1. 注册NPM账号，初始化项目 npm (npmjs.com)  到NPM网站上注册账号 使用以下命令初始化npm项目 12345678910111213141516$ npm init# 按照提示填写信息即可，后面可以通过package.json修改# 设置下镜像源$ npm config set registry http://registry.npmjs.org# 登录账户$ npm adduserUsername: your namePassword: your passwordEmail: your email# 检查是否登录成功$ npm whoami# 不成功则重新登陆下$ npm...</div></div></div></a><a class="pagination-related" href="/posts/1f69cb6c/" title="Hexo-Butterfly手册"><img class="cover" src= "/images/loading.gif" data-lazy-src="/images/cover/default-cover/17.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Hexo-Butterfly手册</div></div><div class="info-2"><div class="info-item-1">图标Butterfly支持font-awesome v6图标   标签外挂Note（Bootstrap Callout）Note（Bootstrap Callout）   配置参数   名称 用法    class 【可选】标识/颜色，可选值（ default / primary / success / info / warning / danger ）   no-icon 【可选】填写该项则不显示icon   style 【可选】覆盖配置中的style，可选值（ simple / modern / flat / disabled ）   color 【可选】颜色，可选值（ default / blue / pink / red / purple / orange / green ）   icon 【可选】可配置自定义 icon (只支持 fontawesome 图标, 也可以配置 no-icon )   用法用法1用法2123{% note [class] [no-icon] [style] %}Any content (support inline tags...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/b293d35b/" title="Kubernetes实战"><img class="cover" src= "/images/loading.gif" data-lazy-src="/images/cover/default-cover/12.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="fas fa-history fa-fw"></i> 2022-08-31</div><div class="info-item-2">Kubernetes实战</div></div><div class="info-2"><div class="info-item-1">Kubernetes实战第1部分 Kubernetes基础篇第1章 Kubernetes介绍几个概念   云计算   狭义上将是指IT基础设施的交付和使用模式，即通过网络以按需、易扩展的方式获取所需资源。   广义上则是指服务的交付和使用模式，通过网络以按需、易扩展的方式获取所需服务。   提供资源的网络被形象地比喻成“云”，其计算能力通常由分布式的大规模集群和虚拟化技术提供的。   “云”好比发电厂，互联网好比输电线路，只不过发电厂对外提供的是IT服务  业界根据云计算提供服务资源的类型将其划分为三大类：  IaaS（基础设施即服务） PaaS（平台即服务） SaaS（软件即服务）  云计算三层架构图     IaaS（基础设施即服务）   白话：卖给你硬件设备，相比与传统的设备更易扩展而已，如云硬盘、云服务器、云主机   通过虚拟化和分布式存储等技术，实现了对包括服务器、存储设备、网络设备等各种物理资源的抽象，从而形成了一个可扩展、可按需分配的虚拟资源池。目前最具代表性的IaaS产品有Amazon AWS，提供虚拟机EC2和云存储S3等服务。    ...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src= "/images/loading.gif" data-lazy-src="/images/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">魚禾</div><div class="author-info-description">Crayon</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/SuCrayon"><i class="fab fa-github"></i><span>Github</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/SuCrayon" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:614820984@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#minikube%E5%AE%89%E8%A3%85"><span class="toc-text">minikube安装</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A1%AB%E5%9D%91%E6%8C%87%E5%BC%95"><span class="toc-text">填坑指引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E8%BF%87%E7%A8%8B"><span class="toc-text">安装过程</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/b1617a14/" title="跳表-实现篇（Golang）"><img src= "/images/loading.gif" data-lazy-src="/images/cover/data-structure/skip-list/%E8%B7%B3%E8%A1%A8-%E5%AE%9E%E7%8E%B0%E7%AF%87%EF%BC%88Golang%EF%BC%89.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跳表-实现篇（Golang）"/></a><div class="content"><a class="title" href="/posts/b1617a14/" title="跳表-实现篇（Golang）">跳表-实现篇（Golang）</a><time datetime="2025-01-25T08:06:00.000Z" title="更新于 2025-01-25 16:06:00">2025-01-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/2e152a56/" title="跳表-原理篇"><img src= "/images/loading.gif" data-lazy-src="/images/cover/data-structure/skip-list/%E8%B7%B3%E8%A1%A8-%E5%8E%9F%E7%90%86%E7%AF%87.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跳表-原理篇"/></a><div class="content"><a class="title" href="/posts/2e152a56/" title="跳表-原理篇">跳表-原理篇</a><time datetime="2025-01-23T15:41:15.000Z" title="更新于 2025-01-23 23:41:15">2025-01-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/a8e92d53/" title="Golang-数组与切片"><img src= "/images/loading.gif" data-lazy-src="/images/cover/programming-language/golang/%E6%95%B0%E7%BB%84%E4%B8%8E%E5%88%87%E7%89%87.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Golang-数组与切片"/></a><div class="content"><a class="title" href="/posts/a8e92d53/" title="Golang-数组与切片">Golang-数组与切片</a><time datetime="2024-12-20T15:37:29.000Z" title="更新于 2024-12-20 23:37:29">2024-12-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/eca128ac/" title="Redis-字典"><img src= "/images/loading.gif" data-lazy-src="/images/cover/nosql/redis/%E5%AD%97%E5%85%B8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis-字典"/></a><div class="content"><a class="title" href="/posts/eca128ac/" title="Redis-字典">Redis-字典</a><time datetime="2024-07-07T07:45:28.000Z" title="更新于 2024-07-07 15:45:28">2024-07-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/79e7fc4f/" title="Redis-简单动态字符串（SDS）"><img src= "/images/loading.gif" data-lazy-src="/images/cover/nosql/redis/%E7%AE%80%E5%8D%95%E5%8A%A8%E6%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2%EF%BC%88SDS%EF%BC%89.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis-简单动态字符串（SDS）"/></a><div class="content"><a class="title" href="/posts/79e7fc4f/" title="Redis-简单动态字符串（SDS）">Redis-简单动态字符串（SDS）</a><time datetime="2024-07-01T10:29:44.000Z" title="更新于 2024-07-01 18:29:44">2024-07-01</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/images/cover/default-cover/8.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2025 By 魚禾</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><div style="width:300px;margin:0 auto; padding:20px 0;"><div style="display: flex;align-items: center;justify-content: center;"><img src= "/images/loading.gif" data-lazy-src="/images/police-icon.png" style="margin-right: 4px; width: 20px; height: 20px;" /><div><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/">粤ICP备2022062775号-1</a></div></div><a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44030902003468" style="display:inline-block;text-decoration:none;height:20px;line-height:20px;"><p style="float:left;height:20px;line-height:20px;margin: 0px 0px 0px 5px; color:#939393;">粤公网安备 44030902003468号</p></a></div></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://unpkg.com/vanilla-lazyload@17.8.3/dist/lazyload.iife.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const initValine = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyValine = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const valineConfig = {
+      el: '#vcomment',
+      appId: 'WkTbxHB8e44QglvhnPIwLU2n-gzGzoHsz',
+      appKey: 'eXdRcA3tj4kM837wFGylIyBt',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      visitor: true,
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || window.location.pathname
+    }
+
+    new Valine(valineConfig)
+  }
+
+  const loadValine = async (el, path) => {
+    if (typeof Valine === 'function') {
+      initValine(el, path)
+    } else {
+      await btf.getScript('https://unpkg.com/valine@1.5.1/dist/Valine.min.js')
+      initValine(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Valine' === 'Valine'
+      ? window.shuoshuoComment = { loadComment: loadValine }
+      : window.loadOtherComment = loadValine
+    return
+  }
+
+  if ('Valine' === 'Valine' || !false) {
+    if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+    else setTimeout(loadValine, 0)
+  } else {
+    window.loadOtherComment = loadValine
+  }
+})()</script></div><script defer="defer" id="ribbon" src="https://unpkg.com/butterfly-extsrc@1.1.3/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"display":{"position":"left","width":150,"height":300,"hOffset":50},"mobile":{"show":false},"react":{"opacity":0.8},"log":false});</script></body></html>
