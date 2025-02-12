@@ -1,0 +1,311 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Crayonの博客</title><meta name="author" content="魚禾"><meta name="copyright" content="魚禾"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Crayon">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Crayonの博客">
+<meta property="og:url" content="http://sucrayon.top/index.html">
+<meta property="og:site_name" content="Crayonの博客">
+<meta property="og:description" content="Crayon">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://sucrayon.top/images/avatar.jpg">
+<meta property="article:author" content="魚禾">
+<meta property="article:tag" content="Java、Golang、Python、Javascript、Vue、Angular、后端工程师、动漫爱好者">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://sucrayon.top/images/avatar.jpg"><link rel="shortcut icon" href="/images/avatar.jpg"><link rel="canonical" href="http://sucrayon.top/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script async="async" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><script>(adsbygoogle = window.adsbygoogle || []).push({
+  google_ad_client: 'ca-pub-8421850827711566',
+  enable_page_level_ads: 'true'
+});</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":150,"languages":{"author":"作者: 魚禾","link":"链接: ","source":"来源: Crayonの博客","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: true,
+  isAnchor: false,
+  percent: {
+    toc: false,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Crayonの博客',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'home'
+}</script><link rel="stylesheet" href="/static/css/common.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+  window.addEventListener('load', preloader.endLoading)
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src= "/images/loading.gif" data-lazy-src="/images/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">25</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/projects/"><i class="fa-fw fas fa-code"></i><span> 项目</span></a></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-heartbeat"></i><span> 娱乐</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/novel/"><i class="fa-fw fas fa-book-open"></i><span> 小说</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 外链</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="full_page" id="page-header" style="background-image: url(https://crayon-my-blog.oss-cn-shenzhen.aliyuncs.com/banner/default-banner.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Crayonの博客</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/projects/"><i class="fa-fw fas fa-code"></i><span> 项目</span></a></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-heartbeat"></i><span> 娱乐</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/novel/"><i class="fa-fw fas fa-book-open"></i><span> 小说</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 外链</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="site-info"><h1 id="site-title">Crayonの博客</h1><div id="site_social_icons"><a class="social-icon" href="https://github.com/SuCrayon" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:614820984@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts nc" id="recent-posts"><div class="recent-post-items"><div class="recent-post-item"><div class="post_cover left"><a href="/posts/e3e1c4a3/" title="LC-77-组合"><img class="post-bg" src= "/images/loading.gif" data-lazy-src="/images/cover/algorithm/LC-77-%E7%BB%84%E5%90%88.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LC-77-组合"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/e3e1c4a3/" title="LC-77-组合">LC-77-组合</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time datetime="2025-02-03T08:58:00.000Z" title="更新于 2025-02-03 16:58:00">2025-02-03</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E7%AE%97%E6%B3%95/">算法</a><i class="fas fa-angle-right article-meta-link"></i><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E7%AE%97%E6%B3%95/%E5%9B%9E%E6%BA%AF/">回溯</a></span></div><div class="content">文章介绍了LeetCode第77题“组合”（难度为中等）的递归回溯解法，通过遍历、递归和回溯生成所有可能的k个数的组合，并提供了Golang代码实现，适合快速理解该算法的应用。</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/a381e6f7/" title="跳表-实现篇（Redis）"><img class="post-bg" src= "/images/loading.gif" data-lazy-src="/images/cover/data-structure/skip-list/%E8%B7%B3%E8%A1%A8-%E5%AE%9E%E7%8E%B0%E7%AF%87%EF%BC%88Redis%EF%BC%89.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跳表-实现篇（Redis）"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/a381e6f7/" title="跳表-实现篇（Redis）">跳表-实现篇（Redis）</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time datetime="2025-02-02T09:47:21.000Z" title="更新于 2025-02-02 17:47:21">2025-02-02</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a><i class="fas fa-angle-right article-meta-link"></i><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E8%B7%B3%E8%A1%A8/">跳表</a></span></div><div class="content">简介本文基于 Redis3.0 版本的源码解读跳表的实现 Redis3.0 源码链接：[redis/redis at 3.0.0](https://github.com/redis/redis/tree/3.0.0)  建议阅读：  跳表-原理篇 | Crayonの博客  本文按照以下顺序进行：  简介 背景知识 源码解读 结构体定义 随机函数 查找 插入 删除    背景知识Redis 内置了多种数据结构，其中`zset`（有序集合，英文名：sorted set）兼具集合的元素唯一性以及有序性（元素有序性）两个特性，被广泛用在日常业务需求的开发中  zset由多个数据结构组合实现的，而跳表（zskiplist）就是实现有序性的关键数据结构，Redis 就是通过跳表实现了zset结构的排序、根据排名的范围获取等操作 Redis 自己实现了跳表结构，为符合自身业务操作的需要增加了一些额外的字段以及操作，虽然和原始论文中的结构不太一样，但基本的操作逻辑都是相同的  源码解读结构体定义zset1234typedef struct zset {    dict *dict;   ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/b1617a14/" title="跳表-实现篇（Golang）"><img class="post-bg" src= "/images/loading.gif" data-lazy-src="/images/cover/data-structure/skip-list/%E8%B7%B3%E8%A1%A8-%E5%AE%9E%E7%8E%B0%E7%AF%87%EF%BC%88Golang%EF%BC%89.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跳表-实现篇（Golang）"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/b1617a14/" title="跳表-实现篇（Golang）">跳表-实现篇（Golang）</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time datetime="2025-01-25T08:06:00.000Z" title="更新于 2025-01-25 16:06:00">2025-01-25</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a><i class="fas fa-angle-right article-meta-link"></i><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E8%B7%B3%E8%A1%A8/">跳表</a></span></div><div class="content">简介本文将参照论文使用Golang语言实现跳表 建议阅读：跳表-原理篇 | Crayonの博客 本文按照以下顺序进行：  简介 编码实现 结构体定义 随机函数 查找 插入 删除   代码测试 性能对比 数据量1k 数据量1w 数据量10w     Leetcode  编码实现本次实现和论文一样，节点顺序以升序排序 结构体定义12345678910111213141516type (	Node struct {		Key      float64		Value    interface{}		Forwards []*Node	}	SkipList struct {		Head     *Node		Level    int		// MaxLevel 跳表的最大层级，这样可以很方便的实现不同最高层级的跳表		MaxLevel int		// P 层级上升的概率		P        float64	})  随机函数和论文如出一辙，这里使用了golang的rand包来生成随机数 1234567func (s *SkipList) randomLevel() int {	level :=...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/2e152a56/" title="跳表-原理篇"><img class="post-bg" src= "/images/loading.gif" data-lazy-src="/images/cover/data-structure/skip-list/%E8%B7%B3%E8%A1%A8-%E5%8E%9F%E7%90%86%E7%AF%87.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跳表-原理篇"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/2e152a56/" title="跳表-原理篇">跳表-原理篇</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time datetime="2025-01-23T15:41:15.000Z" title="更新于 2025-01-23 23:41:15">2025-01-23</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a><i class="fas fa-angle-right article-meta-link"></i><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E8%B7%B3%E8%A1%A8/">跳表</a></span></div><div class="content">什么是跳表跳表（也可以叫跳跃表，英文名：Skip List）是由William Pugh发明的一种查找数据结构，支持对数据的快速查找、插入和删除 OI Wiki：跳表 - OI Wiki 论文地址：skiplists 论文开篇就说明了这是一种可以用来代替平衡树的数据结构（平衡树的实现实在是太复杂了😩） 与平衡树相比，跳表的插入和删除算法要简单得多 BST存在的问题   Binary trees can be used for representing abstract data types such as dictionaries and ordered lists. They work well when the elements are inserted in a random order. Some sequences of operations, such as inserting the elements in order, produce degenerate data structures that give very poor performance. If...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/a8e92d53/" title="Golang-数组与切片"><img class="post-bg" src= "/images/loading.gif" data-lazy-src="/images/cover/programming-language/golang/%E6%95%B0%E7%BB%84%E4%B8%8E%E5%88%87%E7%89%87.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Golang-数组与切片"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/a8e92d53/" title="Golang-数组与切片">Golang-数组与切片</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time datetime="2024-12-20T15:37:29.000Z" title="更新于 2024-12-20 23:37:29">2024-12-20</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/">编程语言</a><i class="fas fa-angle-right article-meta-link"></i><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/Golang/">Golang</a></span></div><div class="content">Go 中的数组和分片都是顺序数据结构，但有一些关键的区别：数组是固定长度的，由存储的元素类型和大小定义；而分片可以理解为动态数组，与类型和长度无关。切片有一个结构，包含长度、容量和指向底层数组的指针，可以同时被多个切片引用。生成切片时，结果的容量是从数组的起点到终点。切片支持特殊方法，如在某些条件下扩展长度和容量。当切片用作函数参数时，函数内部的更改会因底层数组而生效。不过，分片没有并发控制，在并发环境中可能不安全。</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/eca128ac/" title="Redis-字典"><img class="post-bg" src= "/images/loading.gif" data-lazy-src="/images/cover/nosql/redis/%E5%AD%97%E5%85%B8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis-字典"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/eca128ac/" title="Redis-字典">Redis-字典</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time datetime="2024-07-07T07:45:28.000Z" title="更新于 2024-07-07 15:45:28">2024-07-07</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Redis/">Redis</a></span></div><div class="content">Redis中的字典被广泛用于实现Redis的各种功能，其中包括数据库和哈希键。字典会根据负载情况自动进行扩容和收缩，而和其他语言哈希表的扩缩容不同的是，Redis采用渐进式操作的方式实现，以保证扩缩容期间服务的性能稳定</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/79e7fc4f/" title="Redis-简单动态字符串（SDS）"><img class="post-bg" src= "/images/loading.gif" data-lazy-src="/images/cover/nosql/redis/%E7%AE%80%E5%8D%95%E5%8A%A8%E6%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2%EF%BC%88SDS%EF%BC%89.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis-简单动态字符串（SDS）"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/79e7fc4f/" title="Redis-简单动态字符串（SDS）">Redis-简单动态字符串（SDS）</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time datetime="2024-07-01T10:29:44.000Z" title="更新于 2024-07-01 18:29:44">2024-07-01</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Redis/">Redis</a></span></div><div class="content">Redis只会使用C字符串作为字面量，在大多数情况下，Redis使用SDS（Simple Dynamic String，简单动态字符串）作为字符串表示。相比于C字符串，SDS提供了更好的性能和安全性。</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/cb05bf87/" title="Golang-逃逸分析"><img class="post-bg" src= "/images/loading.gif" data-lazy-src="/images/cover/programming-language/golang/%E9%80%83%E9%80%B8%E5%88%86%E6%9E%90.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Golang-逃逸分析"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/cb05bf87/" title="Golang-逃逸分析">Golang-逃逸分析</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time datetime="2024-04-01T15:19:38.000Z" title="更新于 2024-04-01 23:19:38">2024-04-01</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/">编程语言</a><i class="fas fa-angle-right article-meta-link"></i><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/Golang/">Golang</a></span></div><div class="content">逃逸分析是 Go 语言中的一种编译器优化技术，用于确定变量应在堆栈还是堆上分配。它是静态代码分析后的一个优化步骤，用于改善内存管理和提高程序速度。如果函数外没有引用，变量会优先被放置在堆栈中，因为堆栈比堆栈更快，但空间有限。如果函数外有引用，由于存在悬空指针的风险，变量必须放在堆上。逃逸分析可以将变量直接分配到堆，从而减少堆内存分配和 GC 压力。通过使用特定标志编译或检查汇编代码，可以查看转义分析的结果。常见的转义情况包括指针转义、堆栈空间不足以及引用对象的闭包。逃逸分析有助于正确分配内存，从而提高效率和性能。</div></div></div></div><nav id="pagination"><div class="pagination"><span class="page-number current">1</span><a class="page-number" href="/page/2/#content-inner">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/#content-inner">4</a><a class="extend next" rel="next" href="/page/2/#content-inner"><i class="fas fa-chevron-right fa-fw"></i></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src= "/images/loading.gif" data-lazy-src="/images/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">魚禾</div><div class="author-info-description">Crayon</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">25</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/SuCrayon"><i class="fab fa-github"></i><span>Github</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/SuCrayon" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:614820984@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/e3e1c4a3/" title="LC-77-组合"><img src= "/images/loading.gif" data-lazy-src="/images/cover/algorithm/LC-77-%E7%BB%84%E5%90%88.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LC-77-组合"/></a><div class="content"><a class="title" href="/posts/e3e1c4a3/" title="LC-77-组合">LC-77-组合</a><time datetime="2025-02-03T08:58:00.000Z" title="更新于 2025-02-03 16:58:00">2025-02-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/a381e6f7/" title="跳表-实现篇（Redis）"><img src= "/images/loading.gif" data-lazy-src="/images/cover/data-structure/skip-list/%E8%B7%B3%E8%A1%A8-%E5%AE%9E%E7%8E%B0%E7%AF%87%EF%BC%88Redis%EF%BC%89.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跳表-实现篇（Redis）"/></a><div class="content"><a class="title" href="/posts/a381e6f7/" title="跳表-实现篇（Redis）">跳表-实现篇（Redis）</a><time datetime="2025-02-02T09:47:21.000Z" title="更新于 2025-02-02 17:47:21">2025-02-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/b1617a14/" title="跳表-实现篇（Golang）"><img src= "/images/loading.gif" data-lazy-src="/images/cover/data-structure/skip-list/%E8%B7%B3%E8%A1%A8-%E5%AE%9E%E7%8E%B0%E7%AF%87%EF%BC%88Golang%EF%BC%89.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跳表-实现篇（Golang）"/></a><div class="content"><a class="title" href="/posts/b1617a14/" title="跳表-实现篇（Golang）">跳表-实现篇（Golang）</a><time datetime="2025-01-25T08:06:00.000Z" title="更新于 2025-01-25 16:06:00">2025-01-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/2e152a56/" title="跳表-原理篇"><img src= "/images/loading.gif" data-lazy-src="/images/cover/data-structure/skip-list/%E8%B7%B3%E8%A1%A8-%E5%8E%9F%E7%90%86%E7%AF%87.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跳表-原理篇"/></a><div class="content"><a class="title" href="/posts/2e152a56/" title="跳表-原理篇">跳表-原理篇</a><time datetime="2025-01-23T15:41:15.000Z" title="更新于 2025-01-23 23:41:15">2025-01-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/a8e92d53/" title="Golang-数组与切片"><img src= "/images/loading.gif" data-lazy-src="/images/cover/programming-language/golang/%E6%95%B0%E7%BB%84%E4%B8%8E%E5%88%87%E7%89%87.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Golang-数组与切片"/></a><div class="content"><a class="title" href="/posts/a8e92d53/" title="Golang-数组与切片">Golang-数组与切片</a><time datetime="2024-12-20T15:37:29.000Z" title="更新于 2024-12-20 23:37:29">2024-12-20</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>分类</span>
+            <a class="card-more-btn" href="/categories/" title="查看更多">
+      <i class="fas fa-angle-right"></i></a>
+          </div>
+          <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Linux/"><span class="card-category-list-name">Linux</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/MongoDB/"><span class="card-category-list-name">MongoDB</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Redis/"><span class="card-category-list-name">Redis</span><span class="card-category-list-count">2</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E5%95%83%E4%B9%A6/"><span class="card-category-list-name">啃书</span><span class="card-category-list-count">5</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E5%AE%B9%E5%99%A8%E5%AE%9E%E6%88%98/"><span class="card-category-list-name">容器实战</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E5%B8%B8%E7%94%A8/"><span class="card-category-list-name">常用</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E5%BE%85%E5%BD%92%E6%A1%A3/"><span class="card-category-list-name">待归档</span><span class="card-category-list-count">5</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/"><span class="card-category-list-name">数据结构</span><span class="card-category-list-count">3</span></a></li>
+          </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/Butterfly/" style="font-size: 1.3em; color: #99a1ac">Butterfly</a> <a href="/tags/Centos/" style="font-size: 1.1em; color: #999">Centos</a> <a href="/tags/Cgroups/" style="font-size: 1.1em; color: #999">Cgroups</a> <a href="/tags/Docker/" style="font-size: 1.3em; color: #99a1ac">Docker</a> <a href="/tags/Git/" style="font-size: 1.1em; color: #999">Git</a> <a href="/tags/Golang/" style="font-size: 1.5em; color: #99a9bf">Golang</a> <a href="/tags/Hexo/" style="font-size: 1.3em; color: #99a1ac">Hexo</a> <a href="/tags/Kafka/" style="font-size: 1.1em; color: #999">Kafka</a> <a href="/tags/Kubernetes/" style="font-size: 1.3em; color: #99a1ac">Kubernetes</a> <a href="/tags/LeetCode/" style="font-size: 1.5em; color: #99a9bf">LeetCode</a> <a href="/tags/Linux/" style="font-size: 1.5em; color: #99a9bf">Linux</a> <a href="/tags/MongoDB/" style="font-size: 1.1em; color: #999">MongoDB</a> <a href="/tags/Namespace/" style="font-size: 1.1em; color: #999">Namespace</a> <a href="/tags/NoSQL/" style="font-size: 1.5em; color: #99a9bf">NoSQL</a> <a href="/tags/Paxos/" style="font-size: 1.1em; color: #999">Paxos</a> <a href="/tags/Python/" style="font-size: 1.1em; color: #999">Python</a> <a href="/tags/Redis/" style="font-size: 1.5em; color: #99a9bf">Redis</a> <a href="/tags/Ubuntu/" style="font-size: 1.1em; color: #999">Ubuntu</a> <a href="/tags/Virtualbox/" style="font-size: 1.1em; color: #999">Virtualbox</a> <a href="/tags/Windows/" style="font-size: 1.1em; color: #999">Windows</a> <a href="/tags/Zookeeper/" style="font-size: 1.1em; color: #999">Zookeeper</a> <a href="/tags/minikube/" style="font-size: 1.1em; color: #999">minikube</a> <a href="/tags/vim/" style="font-size: 1.1em; color: #999">vim</a> <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" style="font-size: 1.1em; color: #999">分布式</a> <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" style="font-size: 1.5em; color: #99a9bf">数据库</a> <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" style="font-size: 1.5em; color: #99a9bf">数据结构</a> <a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" style="font-size: 1.1em; color: #999">架构设计</a> <a href="/tags/%E7%AE%97%E6%B3%95-%E5%8F%8C%E6%8C%87%E9%92%88/" style="font-size: 1.1em; color: #999">算法-双指针</a> <a href="/tags/%E7%AE%97%E6%B3%95-%E5%9B%9E%E6%BA%AF/" style="font-size: 1.3em; color: #99a1ac">算法-回溯</a> <a href="/tags/%E7%AE%97%E6%B3%95-%E5%AD%97%E7%AC%A6%E4%B8%B2/" style="font-size: 1.1em; color: #999">算法-字符串</a> <a href="/tags/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/" style="font-size: 1.3em; color: #99a1ac">编程语言</a> <a href="/tags/%E8%B7%B3%E8%A1%A8/" style="font-size: 1.5em; color: #99a9bf">跳表</a></div></div><div class="card-widget card-archives">
+    <div class="item-headline">
+      <i class="fas fa-archive"></i>
+      <span>归档</span>
+      <a class="card-more-btn" href="/archives/"
+            title="查看更多">
+            <i class="fas fa-angle-right"></i>
+          </a>
+    </div>
+  
+    <ul class="card-archive-list">
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2025/02/">
+            <span class="card-archive-list-date">
+              二月 2025
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2025/01/">
+            <span class="card-archive-list-date">
+              一月 2025
+            </span>
+            <span class="card-archive-list-count">3</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2024/07/">
+            <span class="card-archive-list-date">
+              七月 2024
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2024/06/">
+            <span class="card-archive-list-date">
+              六月 2024
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2024/03/">
+            <span class="card-archive-list-date">
+              三月 2024
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2024/02/">
+            <span class="card-archive-list-date">
+              二月 2024
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2024/01/">
+            <span class="card-archive-list-date">
+              一月 2024
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2023/09/">
+            <span class="card-archive-list-date">
+              九月 2023
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+    </ul>
+  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站信息</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">25</div></div><div class="webinfo-item"><div class="item-name">运行时间 :</div><div class="item-count" id="runtimeshow" data-publishDate="2022-04-12T23:07:00.000Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总字数 :</div><div class="item-count">60.2k</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总浏览量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2025-02-12T15:24:26.030Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(https://crayon-my-blog.oss-cn-shenzhen.aliyuncs.com/banner/default-banner.jpg);"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2025 By 魚禾</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><div style="width:300px;margin:0 auto; padding:20px 0;"><div style="display: flex;align-items: center;justify-content: center;"><img src= "/images/loading.gif" data-lazy-src="/images/police-icon.png" style="margin-right: 4px; width: 20px; height: 20px;" /><div><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/">粤ICP备2022062775号-1</a></div></div><a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44030902003468" style="display:inline-block;text-decoration:none;height:20px;line-height:20px;"><p style="float:left;height:20px;line-height:20px;margin: 0px 0px 0px 5px; color:#939393;">粤公网安备 44030902003468号</p></a></div></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://unpkg.com/vanilla-lazyload@17.8.3/dist/lazyload.iife.min.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="ribbon" src="https://unpkg.com/butterfly-extsrc@1.1.3/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"display":{"position":"left","width":150,"height":300,"hOffset":50},"mobile":{"show":false},"react":{"opacity":0.8},"log":false});</script></body></html>

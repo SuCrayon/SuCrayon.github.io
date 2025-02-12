@@ -1,0 +1,516 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Golang-逃逸分析 | Crayonの博客</title><meta name="author" content="魚禾"><meta name="copyright" content="魚禾"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="逃逸分析是 Go 语言中的一种编译器优化技术，用于确定变量应在堆栈还是堆上分配。它是静态代码分析后的一个优化步骤，用于改善内存管理和提高程序速度。如果函数外没有引用，变量会优先被放置在堆栈中，因为堆栈比堆栈更快，但空间有限。如果函数外有引用，由于存在悬空指针的风险，变量必须放在堆上。逃逸分析可以将变量直接分配到堆，从而减少堆内存分配和 GC 压力。通过使用特定标志编译或检查汇编代码，可以查看转义分">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Golang-逃逸分析">
+<meta property="og:url" content="http://sucrayon.top/posts/cb05bf87/index.html">
+<meta property="og:site_name" content="Crayonの博客">
+<meta property="og:description" content="逃逸分析是 Go 语言中的一种编译器优化技术，用于确定变量应在堆栈还是堆上分配。它是静态代码分析后的一个优化步骤，用于改善内存管理和提高程序速度。如果函数外没有引用，变量会优先被放置在堆栈中，因为堆栈比堆栈更快，但空间有限。如果函数外有引用，由于存在悬空指针的风险，变量必须放在堆上。逃逸分析可以将变量直接分配到堆，从而减少堆内存分配和 GC 压力。通过使用特定标志编译或检查汇编代码，可以查看转义分">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://sucrayon.top/images/cover/programming-language/golang/%E9%80%83%E9%80%B8%E5%88%86%E6%9E%90.png">
+<meta property="article:published_time" content="2024-03-23T11:12:36.000Z">
+<meta property="article:modified_time" content="2024-04-01T15:19:38.000Z">
+<meta property="article:author" content="魚禾">
+<meta property="article:tag" content="Golang">
+<meta property="article:tag" content="编程语言">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://sucrayon.top/images/cover/programming-language/golang/%E9%80%83%E9%80%B8%E5%88%86%E6%9E%90.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Golang-逃逸分析",
+  "url": "http://sucrayon.top/posts/cb05bf87/",
+  "image": "http://sucrayon.top/images/cover/programming-language/golang/%E9%80%83%E9%80%B8%E5%88%86%E6%9E%90.png",
+  "datePublished": "2024-03-23T11:12:36.000Z",
+  "dateModified": "2024-04-01T15:19:38.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "魚禾",
+      "url": "http://sucrayon.top/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/avatar.jpg"><link rel="canonical" href="http://sucrayon.top/posts/cb05bf87/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script async="async" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><script>(adsbygoogle = window.adsbygoogle || []).push({
+  google_ad_client: 'ca-pub-8421850827711566',
+  enable_page_level_ads: 'true'
+});</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":150,"languages":{"author":"作者: 魚禾","link":"链接: ","source":"来源: Crayonの博客","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: true,
+  isAnchor: false,
+  percent: {
+    toc: false,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Golang-逃逸分析',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/static/css/common.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+  window.addEventListener('load', preloader.endLoading)
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src= "/images/loading.gif" data-lazy-src="/images/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">25</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/projects/"><i class="fa-fw fas fa-code"></i><span> 项目</span></a></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-heartbeat"></i><span> 娱乐</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/novel/"><i class="fa-fw fas fa-book-open"></i><span> 小说</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 外链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/cover/programming-language/golang/逃逸分析.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Crayonの博客</span></a><a class="nav-page-title" href="/"><span class="site-name">Golang-逃逸分析</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/projects/"><i class="fa-fw fas fa-code"></i><span> 项目</span></a></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-heartbeat"></i><span> 娱乐</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/novel/"><i class="fa-fw fas fa-book-open"></i><span> 小说</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 外链</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Golang-逃逸分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-03-23T11:12:36.000Z" title="发表于 2024-03-23 19:12:36">2024-03-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-04-01T15:19:38.000Z" title="更新于 2024-04-01 23:19:38">2024-04-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/">编程语言</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/Golang/">Golang</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">3.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator">|</span><span class="leancloud_visitors" id="/posts/cb05bf87/" data-flag-title="Golang-逃逸分析"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span class="leancloud-visitors-count"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/cb05bf87/#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/posts/cb05bf87/" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><html><head></head><body><h2 id="逃逸分析"><a href="#逃逸分析" class="headerlink" title="逃逸分析"></a>逃逸分析</h2><h3 id="什么是逃逸分析"><a href="#什么是逃逸分析" class="headerlink" title="什么是逃逸分析"></a>什么是逃逸分析</h3><p>在<code>C</code>、<code>C++</code>这类需要手动管理内存的编程语言中，对象或结构体具体分配到堆还是栈上是由工程师自主决定的，如果能够精准地为每一个变量分配合理的空间，那么程序的运行效率和内存使用效率一定是最高的，但是手动分配会导致以下两个问题：</p>
+<ul>
+<li>不需要分配到堆上的对象分配到堆上 —— 浪费内存空间、且可能忘记释放导致内存泄漏</li>
+<li>需要分配到堆上的对象分配到栈上 —— 悬挂指针、影响内存安全</li>
+</ul>
+<h4 id="悬挂指针"><a href="#悬挂指针" class="headerlink" title="悬挂指针"></a>悬挂指针</h4><p>在<code>C</code>语言中，栈上的变量被函数作为返回值返回给调用方是一个常见的错误</p>
+<p>如以下代码</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> *<span class="title function_">foo</span> <span class="params">( <span class="type">void</span> )</span>   </span><br><span class="line">{   </span><br><span class="line">    <span class="type">int</span> t = <span class="number">3</span>;</span><br><span class="line">    <span class="keyword">return</span> &amp;t;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>当 <code>foo</code>函数返回后，它的本地变量会被编译器回收，调用方获取的是一个悬挂指针，不确定当前指针指向的值是否还能正常使用（可能都已经被回收了）</p>
+<blockquote>
+<p>  什么是逃逸分析？</p>
+<p>  在编译器优化中，<em>逃逸分析</em>是用来决定指针动态作用域的方法，是一种静态分析下方法</p>
+<p>  <code>Go</code>语言的编译器使用逃逸分析决定变量应该在栈上分配还是在堆上分配</p>
+</blockquote>
+<p><code>Go</code>语言中的逃逸分析是编译器执行静态代码分析后，对内存管理进行的优化和简化，它可以决定一个变量是分配到栈上还是堆上</p>
+<h3 id="逃逸策略"><a href="#逃逸策略" class="headerlink" title="逃逸策略"></a>逃逸策略</h3><p>如果一个函数返回一个变量的引用，那么它就会发生逃逸</p>
+<p>编译器根据变量是否被外部引用来决定是否逃逸</p>
+<blockquote>
+<ul>
+<li>如果函数外部没有引用，则优先放到栈中（不是一定放在栈中）</li>
+<li>如果函数外部存在引用，则必定放在堆中</li>
+</ul>
+</blockquote>
+<h4 id="解读"><a href="#解读" class="headerlink" title="解读"></a>解读</h4><ul>
+<li><p>函数外部没有引用，则优先放在栈中</p>
+<blockquote>
+<p>  栈空间</p>
+<p>  优点：栈内存的分配非常的快，只需要两个<code>CPU</code>指令——<code>PUSH</code>和<code>RELEASE</code>，对应分配和释放，栈会在函数调用结束后自动回收</p>
+<p>  缺点：栈空间有限，不像堆一样空间充足，这就是为什么在不存在外部引用的情况下也只是优先栈，而不是绝对分配在栈上，对于那些不可预知大小的变量，依然要分配在堆上</p>
+<p>  堆空间</p>
+<p>  优点：堆空间充足（相较于栈空间而言）</p>
+<p>  缺点：堆不像栈那样可以自动清理，在<code>C</code>、<code>C++</code>这类没有<code>GC</code>机制的语言中就必须手动释放内存，否则容易发生内存泄漏</p>
+</blockquote>
+</li>
+<li><p>如果函数外部存在引用，则必定放在堆中</p>
+<p>当外部存在引用时，将变量分配到栈上势必会出现悬挂指针，所以这类变量必须分配到堆中</p>
+</li>
+</ul>
+<p>通过逃逸分析，从代码层面分析后尽量将那些不需要分配到堆上的变量直接分配到栈上，堆上的变量少了，会减轻分配堆内存的开销，同时也减少<code>GC</code>的压力，提高程序的运行速度</p>
+<h3 id="如何查看逃逸分析结果"><a href="#如何查看逃逸分析结果" class="headerlink" title="如何查看逃逸分析结果"></a>如何查看逃逸分析结果</h3><p>比如以下代码栗子🌰</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">foo</span><span class="params">()</span></span> *<span class="type">int</span> {</span><br><span class="line">	t := <span class="number">3</span></span><br><span class="line">	<span class="keyword">return</span> &amp;t;</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">	x := foo()</span><br><span class="line">	fmt.Println(*x)</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<h4 id="查看编译时的输出结果"><a href="#查看编译时的输出结果" class="headerlink" title="查看编译时的输出结果"></a>查看编译时的输出结果</h4><p>使用以下命令编译可以知道逃逸分析的结果</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> build -gcflags <span class="string">'-m -l'</span> main.<span class="keyword">go</span></span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>  <code>-gcflags</code>：是<code>Go</code>编译器选项，具体有哪些选项及含义可以使用以下命令查看</p>
+  <figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> tool compile -h</span><br></pre></td></tr></tbody></table></figure>
+
+<p>  命令输出</p>
+  <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">usage: compile [options] file.go...</span><br><span class="line">...</span><br><span class="line"> -l    <span class="built_in">disable</span> inlining</span><br><span class="line"> -m    <span class="built_in">print</span> optimization decisions</span><br><span class="line">...</span><br></pre></td></tr></tbody></table></figure>
+
+<p>  <code>-l</code>：关闭内联优化</p>
+<p>  <code>-m</code>：打印优化决策结果</p>
+</blockquote>
+<p><img src= "/images/loading.gif" data-lazy-src="/posts/cb05bf87/1711871015189.png" alt="1711871015189"></p>
+<h4 id="查看汇编代码"><a href="#查看汇编代码" class="headerlink" title="查看汇编代码"></a>查看汇编代码</h4><p>也可以通过汇编代码知道逃逸分析的结果</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> tool compile -S escape_analysis.<span class="keyword">go</span></span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<p><img src= "/images/loading.gif" data-lazy-src="/posts/cb05bf87/1711871320525.png" alt="1711871320525"></p>
+<p>这里说明<code>t</code>是通过<code>runtime.newobject()</code>在堆上分配的对象</p>
+<h3 id="常见的逃逸场景"><a href="#常见的逃逸场景" class="headerlink" title="常见的逃逸场景"></a>常见的逃逸场景</h3><h4 id="指针逃逸"><a href="#指针逃逸" class="headerlink" title="指针逃逸"></a>指针逃逸</h4><p>最典型的一种场景，当函数外部存在对函数内变量的引用的时候，就会发生逃逸，将变量分配到堆上（不然不就出现悬挂指针了嘛）</p>
+<p>看一段平时最常见的指针逃逸代码</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Student <span class="keyword">struct</span> {</span><br><span class="line">    Name <span class="type">string</span></span><br><span class="line">    Age  <span class="type">int</span></span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewStudent</span><span class="params">(name <span class="type">string</span>, age <span class="type">int</span>)</span></span> *Student {</span><br><span class="line">    <span class="keyword">return</span> &amp;Student{</span><br><span class="line">        Name: name,</span><br><span class="line">        Age:  age,</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">    NewStudent(<span class="string">"Crayon"</span>, <span class="number">24</span>)</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这段代码的意义很简单，就是提供了一个<code>NewStudent</code>的创建者函数，有时候为了避免大结构体作为函数出入参时的值拷贝的性能开销，会使用指针类型的结构体</p>
+<p><code>NewStudent</code>函数内部创建了一个<code>Student</code>结构体，并将该结构体指针返回给外部，<code>Go</code>编译器认为这是一种指针逃逸行为，需要将变量分配到堆上以避免悬挂指针的问题的产生，尽管函数外部（<code>main</code>函数）中目前还没有使用到<code>NewStudent</code>函数返回的结构体指针</p>
+<h4 id="栈空间不足逃逸"><a href="#栈空间不足逃逸" class="headerlink" title="栈空间不足逃逸"></a>栈空间不足逃逸</h4><p>栈的空间是有限的，所以当变量所需要的内存大小超过栈所能分配的空间的时候，就会将变量分配到堆上</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Slice</span><span class="params">()</span></span> {</span><br><span class="line">    s := <span class="built_in">make</span>([]<span class="type">int</span>, <span class="number">0</span>, <span class="number">1000</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i, _ := <span class="keyword">range</span> s {</span><br><span class="line">        s[i] = i</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">    Slice()</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>查看编译的结果，此时并不会发生逃逸</p>
+<p><img src= "/images/loading.gif" data-lazy-src="/posts/cb05bf87/1711876383880.png" alt="1711876383880"></p>
+<p>但是我们加大切片的容量大小，就会发生逃逸</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Slice</span><span class="params">()</span></span> {</span><br><span class="line">    s := <span class="built_in">make</span>([]<span class="type">int</span>, <span class="number">0</span>, <span class="number">10000</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i, _ := <span class="keyword">range</span> s {</span><br><span class="line">        s[i] = i</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">    Slice()</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>将切片容量扩大到10000，此时再执行编译，可以看到发生了逃逸</p>
+<p><img src= "/images/loading.gif" data-lazy-src="/posts/cb05bf87/1711876465962.png" alt="1711876465962"></p>
+<h5 id="容量未知也会导致导致"><a href="#容量未知也会导致导致" class="headerlink" title="容量未知也会导致导致"></a>容量未知也会导致导致</h5><p>当切片的容量为变量（即编译期还是未知的）的时候，也会发生逃逸</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"math/rand"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Slice</span><span class="params">()</span></span> {</span><br><span class="line">    n := rand.Intn(<span class="number">10</span>)</span><br><span class="line">    _ = <span class="built_in">make</span>([]<span class="type">int</span>, n)</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">    Slice()</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<p><img src= "/images/loading.gif" data-lazy-src="/posts/cb05bf87/1712202550858.png" alt="1712202550858"></p>
+<h4 id="闭包引用对象逃逸"><a href="#闭包引用对象逃逸" class="headerlink" title="闭包引用对象逃逸"></a>闭包引用对象逃逸</h4><figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Fibonacci</span><span class="params">()</span></span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> <span class="type">int</span> {</span><br><span class="line">    a, b := <span class="number">0</span>, <span class="number">1</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> <span class="type">int</span> {</span><br><span class="line">        a, b = b, a+b</span><br><span class="line">        <span class="keyword">return</span> a</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">    f := Fibonacci()</span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>;i++ {</span><br><span class="line">        f()</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<p><img src= "/images/loading.gif" data-lazy-src="/posts/cb05bf87/1711877883619.png" alt="1711877883619"></p>
+<p>可见函数内部<code>a</code>、<code>b</code>都发生了逃逸</p>
+<h4 id="动态类型逃逸？"><a href="#动态类型逃逸？" class="headerlink" title="动态类型逃逸？"></a>动态类型逃逸？</h4><p>这块应该是有一定的误区，至少我在<code>1.17</code>版本测试时，空接口类型的参数不会发生逃逸</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">test</span><span class="params">(v <span class="keyword">interface</span>{})</span></span> <span class="keyword">interface</span>{} {</span><br><span class="line">    <span class="keyword">return</span> v</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">    s := <span class="string">"Crayon"</span></span><br><span class="line">    test(s)</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这里<code>test</code>函数的入参是空接口（动态类型），但是并没有发生逃逸</p>
+<p>但是使用<code>fmt.Println</code>函数时就会发生逃逸</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">test</span><span class="params">(v <span class="keyword">interface</span>{})</span></span> <span class="keyword">interface</span>{} {</span><br><span class="line">    <span class="keyword">return</span> v</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">    s := <span class="string">"Crayon"</span></span><br><span class="line">    <span class="comment">// test(s)</span></span><br><span class="line">    fmt.Println(s)</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<p>使用<code>fmt.Println</code>打印变量就发生了逃逸</p>
+<p><img src= "/images/loading.gif" data-lazy-src="/posts/cb05bf87/1711879475952.png" alt="1711879475952"></p>
+<p>分析<code>fmt.Println</code>的源码，参考其他文章发现一个有意思的点</p>
+<p>那就是<code>reflect</code>系列的方法，如<code>reflect.ValueOf</code>，调用该类方法会触发逃逸</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"reflect"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">    s := <span class="string">"Crayon"</span></span><br><span class="line">    reflect.TypeOf(s)</span><br><span class="line">    reflect.TypeOf(s).Kind()</span><br><span class="line">    reflect.ValueOf(s)</span><br><span class="line">    reflect.ValueOf(s).Kind()</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<p><img src= "/images/loading.gif" data-lazy-src="/posts/cb05bf87/1712207034963.png" alt="1712207034963"></p>
+<h5 id="reflect-ValueOf导致逃逸？"><a href="#reflect-ValueOf导致逃逸？" class="headerlink" title="reflect.ValueOf导致逃逸？"></a><code>reflect.ValueOf</code>导致逃逸？</h5><p>这里先看下<code>reflect.ValueOf</code>函数，点进源码就能直接看到为什么逃逸了</p>
+<p><img src= "/images/loading.gif" data-lazy-src="/posts/cb05bf87/1712207129918.png" alt="1712207129918"></p>
+<p>显示的调用<code>escapes</code>函数让变量逃逸，这里是有意为之，具体为什么有待深入研究下，这里就不往下展开了</p>
+<h5 id="reflect-TypeOf导致逃逸？"><a href="#reflect-TypeOf导致逃逸？" class="headerlink" title="reflect.TypeOf导致逃逸？"></a><code>reflect.TypeOf</code>导致逃逸？</h5><p>从实验的结果来看，只是调用<code>reflect.TypeOf</code>函数并不会触发逃逸，而是在接着调用<code>Type</code>接口（<code>reflect.TypeOf</code>函数的返回值）的方法的时候才会发生逃逸</p>
+<p><img src= "/images/loading.gif" data-lazy-src="/posts/cb05bf87/1712207287284.png" alt="1712207287284"></p>
+<p>查看<code>TypeOf</code>的源码，简单画了一下涉及的几个结构体/接口的类图</p>
+<p><img src= "/images/loading.gif" data-lazy-src="/posts/cb05bf87/1712208272189.svg" alt="1712208272189"></p>
+<p><code>Type</code>是一个顶层的接口，<code>rtype</code>是<code>Type</code>接口的一个实现，<code>emptyInterface</code>和<code>rtype</code>则是组合的关系，存在一个<code>typ</code>的成员变量引用<code>rtype</code></p>
+<p><img src= "/images/loading.gif" data-lazy-src="/posts/cb05bf87/1712208451934.png" alt="1712208451934"></p>
+<p><code>toType</code>的实现很简单，就是将具体实现转化成更抽象的接口类型</p>
+<h6 id="场景复现"><a href="#场景复现" class="headerlink" title="场景复现"></a>场景复现</h6><p>分别模拟了<code>reflect.TypeOf</code>函数的源码行为以及结构体抽象成接口的方法调用的场景</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"unsafe"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> MyInterface <span class="keyword">interface</span> {</span><br><span class="line">    Do()</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Pointer <span class="keyword">struct</span> {</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Pointer)</span></span> Do() {</span><br><span class="line"></span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Pointer2MyInterface</span><span class="params">(s *Pointer)</span></span> MyInterface {</span><br><span class="line">    <span class="keyword">return</span> s</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> emptyInterface <span class="keyword">struct</span> {</span><br><span class="line">    typ  *Pointer</span><br><span class="line">    word unsafe.Pointer</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TypeOf</span><span class="params">(i <span class="keyword">interface</span>{})</span></span> MyInterface {</span><br><span class="line">    eface := (*emptyInterface)(unsafe.Pointer(&amp;i))</span><br><span class="line">    <span class="keyword">return</span> Pointer2MyInterface(eface.typ)</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TypeOf0</span><span class="params">(i <span class="keyword">interface</span>{})</span></span> *Pointer {</span><br><span class="line">    eface := (*emptyInterface)(unsafe.Pointer(&amp;i))</span><br><span class="line">    <span class="keyword">return</span> eface.typ</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TypeOf1</span><span class="params">(i <span class="keyword">interface</span>{})</span></span> Pointer {</span><br><span class="line">    eface := (*emptyInterface)(unsafe.Pointer(&amp;i))</span><br><span class="line">    <span class="keyword">return</span> *eface.typ</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">    p1 := Pointer{}</span><br><span class="line">    TypeOf(p1)</span><br><span class="line">    TypeOf(p1).(*Pointer).Do()</span><br><span class="line">    TypeOf(p1).Do()</span><br><span class="line"></span><br><span class="line">    TypeOf0(p1)</span><br><span class="line">    TypeOf0(p1).Do()</span><br><span class="line"></span><br><span class="line">    TypeOf1(p1)</span><br><span class="line">    pp1 := TypeOf1(p1)</span><br><span class="line">    pp1.Do()</span><br><span class="line"></span><br><span class="line">    p2 := &amp;Pointer{}</span><br><span class="line">    Pointer2MyInterface(p2)</span><br><span class="line"></span><br><span class="line">    p3 := &amp;Pointer{}</span><br><span class="line">    Pointer2MyInterface(p3).Do()</span><br><span class="line"></span><br><span class="line">    p4 := &amp;Pointer{}</span><br><span class="line">    Pointer2MyInterface(p4).(*Pointer).Do()</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>逃逸分析结果</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ go tool compile -m -l escape_analysis.go</span><br><span class="line">escape_analysis.go:12:7: s does not escape</span><br><span class="line">escape_analysis.go:16:26: leaking param: s to result ~r1 level=0</span><br><span class="line">escape_analysis.go:25:13: leaking param: i to result ~r1 level=0</span><br><span class="line">escape_analysis.go:30:14: leaking param: i to result ~r1 level=0</span><br><span class="line">escape_analysis.go:35:14: i does not escape</span><br><span class="line">escape_analysis.go:42:11: p1 does not escape</span><br><span class="line">escape_analysis.go:43:11: p1 does not escape</span><br><span class="line">escape_analysis.go:44:11: p1 escapes to heap</span><br><span class="line">escape_analysis.go:46:12: p1 does not escape</span><br><span class="line">escape_analysis.go:47:12: p1 does not escape</span><br><span class="line">escape_analysis.go:49:12: p1 does not escape</span><br><span class="line">escape_analysis.go:50:19: p1 does not escape</span><br><span class="line">escape_analysis.go:53:11: &amp;Pointer{} does not escape</span><br><span class="line">escape_analysis.go:56:11: &amp;Pointer{} escapes to heap</span><br><span class="line">escape_analysis.go:59:11: &amp;Pointer{} does not escape</span><br><span class="line">&lt;autogenerated&gt;:1: leaking param: .this</span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<h6 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h6><p>从逃逸分析的结果可以说明，接口方法的调用会导致逃逸</p>
+<p>大概的原因可能是接口属于动态的类型，只要实现了接口的结构体都可能是结构体的实现，而编译期间我们并不能知道调用方法的变量属于哪类实现，为避免指针引用以及栈空间大小可能不足的问题，就直接将变量逃逸分配到堆上了</p>
+<h4 id="slice、map、chan元素为指针类型，元素逃逸"><a href="#slice、map、chan元素为指针类型，元素逃逸" class="headerlink" title="slice、map、chan元素为指针类型，元素逃逸"></a>slice、map、chan元素为指针类型，元素逃逸</h4><figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">    s1 := <span class="built_in">make</span>([]*<span class="type">string</span>, <span class="number">0</span>, <span class="number">10</span>)</span><br><span class="line">    str1 := <span class="string">"str1"</span></span><br><span class="line">    s1 = <span class="built_in">append</span>(s1, &amp;str1)</span><br><span class="line"></span><br><span class="line">    s2 := <span class="built_in">make</span>([]<span class="type">string</span>, <span class="number">0</span>, <span class="number">10</span>)</span><br><span class="line">    str2 := <span class="string">"str2"</span></span><br><span class="line">    s2 = <span class="built_in">append</span>(s2, str2)</span><br><span class="line"></span><br><span class="line">    m1 := <span class="built_in">make</span>(<span class="keyword">map</span>[*<span class="type">string</span>]<span class="type">string</span>, <span class="number">8</span>)</span><br><span class="line">    mkey1 := <span class="string">"mkey1"</span></span><br><span class="line">    mvalue1 := <span class="string">"mvalue1"</span></span><br><span class="line">    m1[&amp;mkey1] = mvalue1</span><br><span class="line"></span><br><span class="line">    m2 := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="type">string</span>]*<span class="type">string</span>, <span class="number">8</span>)</span><br><span class="line">    mkey2 := <span class="string">"mkey2"</span></span><br><span class="line">    mvalue2 := <span class="string">"mvalue2"</span></span><br><span class="line">    m2[mkey2] = &amp;mvalue2</span><br><span class="line"></span><br><span class="line">    m3 := <span class="built_in">make</span>(<span class="keyword">map</span>[*<span class="type">string</span>]*<span class="type">string</span>, <span class="number">8</span>)</span><br><span class="line">    mkey3 := <span class="string">"mkey3"</span></span><br><span class="line">    mvalue3 := <span class="string">"mvalue3"</span></span><br><span class="line">    m3[&amp;mkey3] = &amp;mvalue3</span><br><span class="line"></span><br><span class="line">    m4 := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="type">string</span>]<span class="type">string</span>, <span class="number">8</span>)</span><br><span class="line">    mkey4 := <span class="string">"mkey4"</span></span><br><span class="line">    mvalue4 := <span class="string">"mvalue4"</span></span><br><span class="line">    m4[mkey4] = mvalue4</span><br><span class="line"></span><br><span class="line">    ch1 := <span class="built_in">make</span>(<span class="keyword">chan</span> *<span class="type">string</span>, <span class="number">10</span>)</span><br><span class="line">    chStr1 := <span class="string">"chStr1"</span></span><br><span class="line">    ch1 &lt;- &amp;chStr1</span><br><span class="line"></span><br><span class="line">    ch2 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="type">string</span>, <span class="number">10</span>)</span><br><span class="line">    chStr2 := <span class="string">"chStr2"</span></span><br><span class="line">    ch2 &lt;- chStr2</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>逃逸分析结果</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ go tool compile -m -l escape_analysis.go</span><br><span class="line">escape_analysis.go:5:5: moved to heap: str1</span><br><span class="line">escape_analysis.go:13:5: moved to heap: mkey1</span><br><span class="line">escape_analysis.go:19:5: moved to heap: mvalue2</span><br><span class="line">escape_analysis.go:23:5: moved to heap: mkey3</span><br><span class="line">escape_analysis.go:24:5: moved to heap: mvalue3</span><br><span class="line">escape_analysis.go:33:5: moved to heap: chStr1</span><br><span class="line">escape_analysis.go:4:15: make([]*string, 0, 10) does not escape</span><br><span class="line">escape_analysis.go:8:15: make([]string, 0, 10) does not escape</span><br><span class="line">escape_analysis.go:12:15: make(map[*string]string, 8) does not escape</span><br><span class="line">escape_analysis.go:17:15: make(map[string]*string, 8) does not escape</span><br><span class="line">escape_analysis.go:22:15: make(map[*string]*string, 8) does not escape</span><br><span class="line">escape_analysis.go:27:15: make(map[string]string, 8) does not escape</span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<p>结论：指针类型元素会发生逃逸</p>
+<h3 id="案例分析"><a href="#案例分析" class="headerlink" title="案例分析"></a>案例分析</h3><h4 id="案例一"><a href="#案例一" class="headerlink" title="案例一"></a>案例一</h4><figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">type</span> S <span class="keyword">struct</span> {}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">  <span class="keyword">var</span> x S</span><br><span class="line">  _ = identity(x)</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">identity</span><span class="params">(x S)</span></span> S {</span><br><span class="line">  <span class="keyword">return</span> x</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<div class="hide-block"><button type="button" class="hide-button" style="">查看分析</button><div class="hide-content"><p><mark class="hl-label green">没有发生逃逸</mark></p>
+<p>由于<code>Go</code>语言中参数是值传递，输入输出都是值拷贝，所以此处不会发生逃逸，变量<code>x</code>还是分配在栈上</p>
+</div></div>
+
+
+
+<h4 id="案例二"><a href="#案例二" class="headerlink" title="案例二"></a>案例二</h4><figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> S <span class="keyword">struct</span> {}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">  <span class="keyword">var</span> x S</span><br><span class="line">  y := &amp;x</span><br><span class="line">  _ = identity(y)</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">identity</span><span class="params">(z *S)</span></span> *S {</span><br><span class="line">  <span class="keyword">return</span> z</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<div class="hide-block"><button type="button" class="hide-button" style="">查看分析</button><div class="hide-content"><p><mark class="hl-label green">没有发生逃逸</mark></p>
+<p>变量<code>x</code>被变量<code>y</code>引用，但是都没有超出<code>main</code>函数的作用域，所以没有发生逃逸</p>
+<p>而<code>identity</code>函数输入直接作为返回值返回，没有将变量<code>z</code>的引用返回到函数外部，所以变量<code>z</code>没有发生逃逸</p>
+</div></div>
+
+
+
+<h4 id="案例三"><a href="#案例三" class="headerlink" title="案例三"></a>案例三</h4><figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> S <span class="keyword">struct</span> {</span><br><span class="line">  M *<span class="type">int</span></span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">  <span class="keyword">var</span> i <span class="type">int</span></span><br><span class="line">  refStruct(i)</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">refStruct</span><span class="params">(y <span class="type">int</span>)</span></span> (z S) {</span><br><span class="line">  z.M = &amp;y</span><br><span class="line">  <span class="keyword">return</span> z</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<div class="hide-block"><button type="button" class="hide-button" style="">查看分析</button><div class="hide-content"><p><mark class="hl-label orange">发生逃逸</mark></p>
+<p>变量<code>y</code>属于<code>refStruct</code>函数的局部变量（形参），将<code>y</code>的引用赋给<code>z.M</code>这个结构体内的变量再返回给函数外部，函数外部想要访问<code>M</code>（获取<code>M</code>引用地址对应的值），<code>y</code>就不能分配在栈上，必须逃逸分配到堆上</p>
+</div></div>
+
+
+
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ul>
+<li>栈上分配内存比在堆中分配内存有更高的效率</li>
+<li>栈上分配的内存不需要<code>GC</code>处理，回收的效率高（用完即回收）</li>
+<li>堆上分配的内存使用完毕会交给<code>GC</code>处理</li>
+<li>逃逸分析的目的是决定内存分配在栈还是堆上，正确的内存方式能够提高分配效率和回收效率，提升程序性能</li>
+<li><code>Go</code>语言逃逸分析在编译阶段完成</li>
+</ul>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><blockquote>
+<p>  <a target="_blank" rel="noopener" href="https://draveness.me/golang/docs/part3-runtime/ch07-memory/golang-stack-management/">Go 语言的栈内存和逃逸分析 | Go 语言设计与实现 (draveness.me)</a></p>
+<p>  <a target="_blank" rel="noopener" href="https://golang.design/go-questions/compile/escape/">逃逸分析是怎么进行的 | Go 程序员面试笔试宝典 (golang.design)</a></p>
+<p>  <a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_44531174/article/details/116173347">golang的fmt包引发的变量逃逸到堆的问题_golang fmt.sprintf out of memory-CSDN博客</a></p>
+<p>  <a target="_blank" rel="noopener" href="https://reusee.github.io/post/escape_analysis/">golang变量逃逸分析小探 - 声zzz (reusee.github.io)</a></p>
+<p>  <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/374991282">通过实例理解Go逃逸分析 - 知乎 (zhihu.com)</a></p>
+<p>  <a target="_blank" rel="noopener" href="https://tonybai.com/2021/05/24/understand-go-escape-analysis-by-example/">通过实例理解Go逃逸分析 | Tony Bai</a></p>
+</blockquote>
+</body></html></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://sucrayon.top">魚禾</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://sucrayon.top/posts/cb05bf87/">http://sucrayon.top/posts/cb05bf87/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://sucrayon.top" target="_blank">Crayonの博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Golang/">Golang</a><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/">编程语言</a></div><div class="post-share"><div class="social-share" data-image="/images/cover/programming-language/golang/%E9%80%83%E9%80%B8%E5%88%86%E6%9E%90.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/images/wxpay.png" target="_blank"><img class="post-qr-code-img" src= "/images/loading.gif" data-lazy-src="/images/wxpay.png" alt="wxpay"/></a><div class="post-qr-code-desc">wxpay</div></li><li class="reward-item"><a href="/images/alipay.jpg" target="_blank"><img class="post-qr-code-img" src= "/images/loading.gif" data-lazy-src="/images/alipay.jpg" alt="alipay"/></a><div class="post-qr-code-desc">alipay</div></li></ul></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/a8e92d53/" title="Golang-数组与切片"><img class="cover" src= "/images/loading.gif" data-lazy-src="/images/cover/programming-language/golang/%E6%95%B0%E7%BB%84%E4%B8%8E%E5%88%87%E7%89%87.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Golang-数组与切片</div></div><div class="info-2"><div class="info-item-1">Go 中的数组和分片都是顺序数据结构，但有一些关键的区别：数组是固定长度的，由存储的元素类型和大小定义；而分片可以理解为动态数组，与类型和长度无关。切片有一个结构，包含长度、容量和指向底层数组的指针，可以同时被多个切片引用。生成切片时，结果的容量是从数组的起点到终点。切片支持特殊方法，如在某些条件下扩展长度和容量。当切片用作函数参数时，函数内部的更改会因底层数组而生效。不过，分片没有并发控制，在并发环境中可能不安全。</div></div></div></a><a class="pagination-related" href="/posts/79e7fc4f/" title="Redis-简单动态字符串（SDS）"><img class="cover" src= "/images/loading.gif" data-lazy-src="/images/cover/nosql/redis/%E7%AE%80%E5%8D%95%E5%8A%A8%E6%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2%EF%BC%88SDS%EF%BC%89.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Redis-简单动态字符串（SDS）</div></div><div class="info-2"><div class="info-item-1">Redis只会使用C字符串作为字面量，在大多数情况下，Redis使用SDS（Simple Dynamic String，简单动态字符串）作为字符串表示。相比于C字符串，SDS提供了更好的性能和安全性。</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/a8e92d53/" title="Golang-数组与切片"><img class="cover" src= "/images/loading.gif" data-lazy-src="/images/cover/programming-language/golang/%E6%95%B0%E7%BB%84%E4%B8%8E%E5%88%87%E7%89%87.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="fas fa-history fa-fw"></i> 2024-12-20</div><div class="info-item-2">Golang-数组与切片</div></div><div class="info-2"><div class="info-item-1">Go 中的数组和分片都是顺序数据结构，但有一些关键的区别：数组是固定长度的，由存储的元素类型和大小定义；而分片可以理解为动态数组，与类型和长度无关。切片有一个结构，包含长度、容量和指向底层数组的指针，可以同时被多个切片引用。生成切片时，结果的容量是从数组的起点到终点。切片支持特殊方法，如在某些条件下扩展长度和容量。当切片用作函数参数时，函数内部的更改会因底层数组而生效。不过，分片没有并发控制，在并发环境中可能不安全。</div></div></div></a><a class="pagination-related" href="/posts/b1617a14/" title="跳表-实现篇（Golang）"><img class="cover" src= "/images/loading.gif" data-lazy-src="/images/cover/data-structure/skip-list/%E8%B7%B3%E8%A1%A8-%E5%AE%9E%E7%8E%B0%E7%AF%87%EF%BC%88Golang%EF%BC%89.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="fas fa-history fa-fw"></i> 2025-01-25</div><div class="info-item-2">跳表-实现篇（Golang）</div></div><div class="info-2"><div class="info-item-1">简介本文将参照论文使用Golang语言实现跳表 建议阅读：跳表-原理篇 | Crayonの博客 本文按照以下顺序进行：  简介 编码实现 结构体定义 随机函数 查找 插入 删除   代码测试 性能对比 数据量1k 数据量1w 数据量10w     Leetcode  编码实现本次实现和论文一样，节点顺序以升序排序 结构体定义12345678910111213141516type (	Node struct {		Key      float64		Value    interface{}		Forwards []*Node	}	SkipList struct {		Head     *Node		Level    int		// MaxLevel 跳表的最大层级，这样可以很方便的实现不同最高层级的跳表		MaxLevel int		// P 层级上升的概率		P        float64	})  随机函数和论文如出一辙，这里使用了golang的rand包来生成随机数 1234567func (s *SkipList) randomLevel() int {	level :=...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src= "/images/loading.gif" data-lazy-src="/images/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">魚禾</div><div class="author-info-description">Crayon</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">25</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/SuCrayon"><i class="fab fa-github"></i><span>Github</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/SuCrayon" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:614820984@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%83%E9%80%B8%E5%88%86%E6%9E%90"><span class="toc-text">逃逸分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E9%80%83%E9%80%B8%E5%88%86%E6%9E%90"><span class="toc-text">什么是逃逸分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%82%AC%E6%8C%82%E6%8C%87%E9%92%88"><span class="toc-text">悬挂指针</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%83%E9%80%B8%E7%AD%96%E7%95%A5"><span class="toc-text">逃逸策略</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E8%AF%BB"><span class="toc-text">解读</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8B%E9%80%83%E9%80%B8%E5%88%86%E6%9E%90%E7%BB%93%E6%9E%9C"><span class="toc-text">如何查看逃逸分析结果</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%BC%96%E8%AF%91%E6%97%B6%E7%9A%84%E8%BE%93%E5%87%BA%E7%BB%93%E6%9E%9C"><span class="toc-text">查看编译时的输出结果</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%B1%87%E7%BC%96%E4%BB%A3%E7%A0%81"><span class="toc-text">查看汇编代码</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E9%80%83%E9%80%B8%E5%9C%BA%E6%99%AF"><span class="toc-text">常见的逃逸场景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8C%87%E9%92%88%E9%80%83%E9%80%B8"><span class="toc-text">指针逃逸</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%88%E7%A9%BA%E9%97%B4%E4%B8%8D%E8%B6%B3%E9%80%83%E9%80%B8"><span class="toc-text">栈空间不足逃逸</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AE%B9%E9%87%8F%E6%9C%AA%E7%9F%A5%E4%B9%9F%E4%BC%9A%E5%AF%BC%E8%87%B4%E5%AF%BC%E8%87%B4"><span class="toc-text">容量未知也会导致导致</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AD%E5%8C%85%E5%BC%95%E7%94%A8%E5%AF%B9%E8%B1%A1%E9%80%83%E9%80%B8"><span class="toc-text">闭包引用对象逃逸</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E9%80%83%E9%80%B8%EF%BC%9F"><span class="toc-text">动态类型逃逸？</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#reflect-ValueOf%E5%AF%BC%E8%87%B4%E9%80%83%E9%80%B8%EF%BC%9F"><span class="toc-text">reflect.ValueOf导致逃逸？</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#reflect-TypeOf%E5%AF%BC%E8%87%B4%E9%80%83%E9%80%B8%EF%BC%9F"><span class="toc-text">reflect.TypeOf导致逃逸？</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E5%A4%8D%E7%8E%B0"><span class="toc-text">场景复现</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA"><span class="toc-text">结论</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#slice%E3%80%81map%E3%80%81chan%E5%85%83%E7%B4%A0%E4%B8%BA%E6%8C%87%E9%92%88%E7%B1%BB%E5%9E%8B%EF%BC%8C%E5%85%83%E7%B4%A0%E9%80%83%E9%80%B8"><span class="toc-text">slice、map、chan元素为指针类型，元素逃逸</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E5%88%86%E6%9E%90"><span class="toc-text">案例分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E4%B8%80"><span class="toc-text">案例一</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E4%BA%8C"><span class="toc-text">案例二</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E4%B8%89"><span class="toc-text">案例三</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">参考资料</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/e3e1c4a3/" title="LC-77-组合"><img src= "/images/loading.gif" data-lazy-src="/images/cover/algorithm/LC-77-%E7%BB%84%E5%90%88.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LC-77-组合"/></a><div class="content"><a class="title" href="/posts/e3e1c4a3/" title="LC-77-组合">LC-77-组合</a><time datetime="2025-02-03T08:58:00.000Z" title="更新于 2025-02-03 16:58:00">2025-02-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/a381e6f7/" title="跳表-实现篇（Redis）"><img src= "/images/loading.gif" data-lazy-src="/images/cover/data-structure/skip-list/%E8%B7%B3%E8%A1%A8-%E5%AE%9E%E7%8E%B0%E7%AF%87%EF%BC%88Redis%EF%BC%89.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跳表-实现篇（Redis）"/></a><div class="content"><a class="title" href="/posts/a381e6f7/" title="跳表-实现篇（Redis）">跳表-实现篇（Redis）</a><time datetime="2025-02-02T09:47:21.000Z" title="更新于 2025-02-02 17:47:21">2025-02-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/b1617a14/" title="跳表-实现篇（Golang）"><img src= "/images/loading.gif" data-lazy-src="/images/cover/data-structure/skip-list/%E8%B7%B3%E8%A1%A8-%E5%AE%9E%E7%8E%B0%E7%AF%87%EF%BC%88Golang%EF%BC%89.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跳表-实现篇（Golang）"/></a><div class="content"><a class="title" href="/posts/b1617a14/" title="跳表-实现篇（Golang）">跳表-实现篇（Golang）</a><time datetime="2025-01-25T08:06:00.000Z" title="更新于 2025-01-25 16:06:00">2025-01-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/2e152a56/" title="跳表-原理篇"><img src= "/images/loading.gif" data-lazy-src="/images/cover/data-structure/skip-list/%E8%B7%B3%E8%A1%A8-%E5%8E%9F%E7%90%86%E7%AF%87.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跳表-原理篇"/></a><div class="content"><a class="title" href="/posts/2e152a56/" title="跳表-原理篇">跳表-原理篇</a><time datetime="2025-01-23T15:41:15.000Z" title="更新于 2025-01-23 23:41:15">2025-01-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/a8e92d53/" title="Golang-数组与切片"><img src= "/images/loading.gif" data-lazy-src="/images/cover/programming-language/golang/%E6%95%B0%E7%BB%84%E4%B8%8E%E5%88%87%E7%89%87.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Golang-数组与切片"/></a><div class="content"><a class="title" href="/posts/a8e92d53/" title="Golang-数组与切片">Golang-数组与切片</a><time datetime="2024-12-20T15:37:29.000Z" title="更新于 2024-12-20 23:37:29">2024-12-20</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/images/cover/programming-language/golang/逃逸分析.png);"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2025 By 魚禾</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><div style="width:300px;margin:0 auto; padding:20px 0;"><div style="display: flex;align-items: center;justify-content: center;"><img src= "/images/loading.gif" data-lazy-src="/images/police-icon.png" style="margin-right: 4px; width: 20px; height: 20px;" /><div><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/">粤ICP备2022062775号-1</a></div></div><a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44030902003468" style="display:inline-block;text-decoration:none;height:20px;line-height:20px;"><p style="float:left;height:20px;line-height:20px;margin: 0px 0px 0px 5px; color:#939393;">粤公网安备 44030902003468号</p></a></div></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://unpkg.com/vanilla-lazyload@17.8.3/dist/lazyload.iife.min.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const initValine = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyValine = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const valineConfig = {
+      el: '#vcomment',
+      appId: 'WkTbxHB8e44QglvhnPIwLU2n-gzGzoHsz',
+      appKey: 'eXdRcA3tj4kM837wFGylIyBt',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      visitor: true,
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || window.location.pathname
+    }
+
+    new Valine(valineConfig)
+  }
+
+  const loadValine = async (el, path) => {
+    if (typeof Valine === 'function') {
+      initValine(el, path)
+    } else {
+      await btf.getScript('https://unpkg.com/valine@1.5.1/dist/Valine.min.js')
+      initValine(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Valine' === 'Valine'
+      ? window.shuoshuoComment = { loadComment: loadValine }
+      : window.loadOtherComment = loadValine
+    return
+  }
+
+  if ('Valine' === 'Valine' || !false) {
+    if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+    else setTimeout(loadValine, 0)
+  } else {
+    window.loadOtherComment = loadValine
+  }
+})()</script></div><script defer="defer" id="ribbon" src="https://unpkg.com/butterfly-extsrc@1.1.3/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"display":{"position":"left","width":150,"height":300,"hOffset":50},"mobile":{"show":false},"react":{"opacity":0.8},"log":false});</script></body></html>
